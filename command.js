@@ -1,4 +1,4 @@
-//Credit to ZhuoweiZhang < Developer of BlockLauncher :)
+//Credit to ZhuoweiZhang < for his code!
 
 var UPWARD = 1;
 var DOWNWARD = -1;
@@ -13,6 +13,7 @@ var emptyslot = null;
 var playerDir = [0, 0, 0];
 var DEG_TO_RAD = Math.PI / 180;
 var playerFlySpeed = 1;
+var bat, blaze, chicken, cow, pig, creeper, enderman, zombie, pigzombie, ghast, skeleton, sheep, rabbit, lightning, irongolem, lavaslime, zombievillager, mushroomcow;
 
 /*ModPE.setItem(460, "apple_golden", 0, "Enhanced Food", 64);//Still on beta stage!
 Item.setProperties(460, 
@@ -53,6 +54,9 @@ Item.addShapedRecipe(460, 1, 0,  ["d d",
 */
 function newLevel(){
 	say("Vvv is currently in beta!")
+	if(Level.getGameMode() == 1){
+		Entity.setCarriedItem(getPlayerEnt(), 0, 1, 0);
+	}
 }
 
 function procCmd(command){
@@ -92,9 +96,15 @@ switch(cmd[0]){
 	say("/give [id] [amount] [itemdata]");
 	say("/removealleffect");
 	say("/sethealth [amount/half-hearts]");
-	say("/addeffect [effectname] [duration]");
-	say("/spawnmob [type] [skin] [name] [health]");
+	say("/addeffect [effectname] [amplification][duration]");
+	say("/summon [type] [xRelative] [yRelative] [zRelative]");
 	say("/lvl [amount]");
+	say("/command5 for page 5");
+	break;
+	case "command5":
+	say("/fov [amount]");
+	say("/lightning");
+	say("/getXYZ");
 	break;
 case "up":
 teleportToFloor(UPWARD);
@@ -204,55 +214,68 @@ break;
 case "addeffect":
 switch(cmd[1]){
 	case "absorption":
-	effect(MobEffect.absorption, parseInt(cmd[2])*20);
+	effect(MobEffect.absorption, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "damage_boost":
-	effect(MobEffect.damageBoost, parseInt(cmd[2])*20);
+	effect(MobEffect.damageBoost, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "damage_resistance":
-	effect(MobEffect.damageResistance, parseInt(cmd[2])*20);
+	effect(MobEffect.damageResistance, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "haste":
-	effect(MobEffect.digSpeed, parseInt(cmd[2])*20);
+	effect(MobEffect.digSpeed, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "fire_resistance":
-	effect(MobEffect.fireResistance, parseInt(cmd[2])*20)
+	effect(MobEffect.fireResistance, parseInt(cmd[2])*20, parseInt(cmd[3]))
 	break;
 	case "health_boost":
-	effect(MobEffect.healthBoost, parseInt(cmd[2])*20);
+	effect(MobEffect.healthBoost, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "invinsibility":
-	effect(MobEffect.invinsibility, parseInt(cmd[2])*20);
+	effect(MobEffect.invinsibility, parseInt(cmd[2])*20, amp);
 	break;
 	case "jump_boost":
-	effect(MobEffect.jump, parseInt(cmd[2])*20);
+	effect(MobEffect.jump, parseInt(cmd[2])*20, amp);
 	break;
 	case "swiftness":
-	effect(MobEffect.movementSpeed, parseInt(cmd[2])*20);
+	effect(MobEffect.movementSpeed, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "night_vision":
-	effect(MobEffect.nightVision, parseInt(cmd[2])*20);
+	effect(MobEffect.nightVision, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "regeneration":
-	effect(MobEffect.regeneration, parseInt(cmd[2])*20);
+	effect(MobEffect.regeneration, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "saturation":
-	effect(MobEffect.saturation, parseInt(cmd[2])*20);
+	effect(MobEffect.saturation, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	case "water_breathing":
-	effect(MobEffect.waterBreathing, parseInt(cmd[2])*20);
+	effect(MobEffect.waterBreathing, parseInt(cmd[2])*20, parseInt(cmd[3]));
 	break;
 	default: effectHelp();
 }
 break;
-case "spawnmob":
-  Mob = Entity.spawnMob(px,py,pz,cmd[1], cmd[2]);
-  Entity.setNameTag(Mob, cmd[3]);
-  Entity.setHealth(Mob, parseInt(cmd[4]));
-  say("Entity Spawned");
+case "summon":
+  switch(cmd[1]){
+  	case "zombie":
+  	zombie = Level.spawnMob(px, py+2, pz, EntityType.ZOMBIE, "mob/zombie.png");
+  	Entity.setRenderType(zombie, EntityRenderType.zombie);
+  	break; //more to add
+  }
 break;
 case "lvl":
 Player.setLevel(parseInt(cmd[1]));
+say("Level Set!");
+break;
+case "fov":
+Player.setFov(parseInt(cmd[1]));
+break;
+case "lightning":
+ lightning = Level.spawnMob(px, py, pz, EntityType.LIGHTNING_BOLT);
+say("Summoned a lightning!");
+break;
+case "getXYZ":
+say(Math.floor(px) + " , " + Math.floor(py) + " , " + Math.floor(pz));
 break;
 }
 }
@@ -345,9 +368,9 @@ function say(msg){
 clientMessage(ChatColor.RED + "[]Server]> " + ChatColor.GREEN + msg);
 }
 
-function effect(e, d){
+function effect(e, d, am){
 	var ent = getPlayerEnt();
-	Entity.addEffect(ent, e, d, 0, false, true);
+	Entity.addEffect(ent, e, d, am, false, true);
 }
 
 /*function spawnMob(type,skin,name,rendertype,health,eff){
@@ -371,5 +394,5 @@ function effectHelp(){
 	say("regeneration");
 	say("saturation");
 	say("water_breathing");
-	say("/addeffect [effectname] [duration]'");
+	say("/addeffect [effectname] [amplification] [duration]'");
 }
